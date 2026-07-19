@@ -34,7 +34,7 @@
   .demo-head p b { color:var(--fg); }
 
   .flow { display:flex; align-items:stretch; gap:6px; }
-  .src { width:240px; flex-shrink:0; display:flex; flex-direction:column; gap:12px; }
+  .src { width:240px; flex-shrink:0; align-self:center; }
   .arr { align-self:center; color:var(--accent); flex-shrink:0; }
   .arr svg { width:34px; height:16px; display:block; }
 
@@ -55,14 +55,15 @@
   .cell.params { background:var(--accent-soft); }
   .cell.hot { background:var(--accent-soft); border-color:var(--accent); }
 
-  /* detected knobs */
-  .knobs { border:1px solid var(--border); border-radius:10px; background:var(--card); padding:10px 12px 4px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
-  .knobs-h { font-size:.72rem; font-weight:600; color:var(--accent); margin-bottom:10px; }
-  .knob { margin-bottom:10px; }
+  /* the Controls sidebar JupyDash adds for detected knobs */
+  .appmain { flex:1; display:flex; min-height:0; }
+  .controls { width:168px; flex-shrink:0; padding:10px 12px; border-left:1px solid var(--border); background:var(--card); }
+  .controls-h { font-size:.72rem; font-weight:600; color:var(--accent); margin-bottom:4px; }
+  .controls-sub { font-size:.66rem; color:var(--muted); line-height:1.45; margin-bottom:12px; }
+  .knob { margin-bottom:10px; position:relative; }
   .knob > label { display:block; font:600 11px "SF Mono",Menlo,monospace; margin-bottom:3px; color:var(--fg); }
-  .range { display:flex; align-items:center; gap:8px; }
-  .range input[type=range]{ flex:1; accent-color:var(--fg); }
-  .range .val { width:38px; text-align:right; font:11.5px "SF Mono",Menlo,monospace; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .knob .val { position:absolute; top:0; right:0; font:11px "SF Mono",Menlo,monospace; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .knob input[type=range]{ width:100%; accent-color:var(--fg); }
 
   /* mini JupyDash app window */
   .appwin { flex:1; min-width:360px; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:10px; overflow:hidden;
@@ -78,7 +79,7 @@
   .autop.on::before { background:var(--ok); }
   .status { margin-left:auto; font-size:10.5px; color:var(--ok); font-variant-numeric:tabular-nums; }
 
-  .board { flex:1; display:grid; grid-template-columns:2fr 1fr; grid-template-rows:176px 148px;
+  .board { flex:1; min-width:0; display:grid; grid-template-columns:2fr 1fr; grid-template-rows:176px 148px;
            grid-template-areas:"s1 s2" "s3 s4"; gap:10px; padding:12px; }
   .panel { display:flex; flex-direction:column; overflow:hidden; min-width:0;
            background:var(--card); border:1px solid var(--border); border-radius:9px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
@@ -107,6 +108,8 @@
     .src { width:100%; max-width:420px; }
     .arr { transform:rotate(90deg); }
     .appwin { width:100%; min-width:0; }
+    .appmain { flex-direction:column; }
+    .controls { width:auto; border-left:none; border-top:1px solid var(--border); }
   }
 </style>
 </head>
@@ -124,9 +127,9 @@
     <div class="card">
       <div class="demo-head">
         <span class="badge">Live demo</span>
-        <p><b>Drag a panel. Turn a knob.</b> The notebook&rsquo;s outputs became the panels on the right, and
-           <b>✨&nbsp;Detect knobs</b> turned its hardcoded values into controls — every change re-runs the
-           notebook and refreshes every panel in place.</p>
+        <p><b>Drag a panel. Turn a knob.</b> JupyDash ran the notebook on the left and turned its outputs into
+           panels — and its <b>✨&nbsp;Detect knobs</b> feature turned the code&rsquo;s hardcoded values into the
+           controls on the right. Every change re-runs the notebook and refreshes every panel in place.</p>
       </div>
 
       <div class="flow">
@@ -144,16 +147,6 @@ ax.plot(x, y)</span></div>
               <div class="cell" data-c="stats"><em>In [5]</em><span class="code">pd.Series(y).describe()</span></div>
             </div>
           </div>
-
-          <div class="knobs">
-            <div class="knobs-h">✨ Detected knobs</div>
-            <div class="knob"><label>freq</label><div class="range">
-              <input id="k-freq" type="range" min="0.2" max="3" step="0.1" value="1"><span class="val" id="kv-freq">1.0</span></div></div>
-            <div class="knob"><label>amp</label><div class="range">
-              <input id="k-amp" type="range" min="0.2" max="2" step="0.1" value="1"><span class="val" id="kv-amp">1.0</span></div></div>
-            <div class="knob"><label>threshold</label><div class="range">
-              <input id="k-thr" type="range" min="-1.5" max="1.5" step="0.05" value="0.6"><span class="val" id="kv-thr">0.60</span></div></div>
-          </div>
         </div>
 
         <div class="arr" aria-hidden="true">
@@ -167,6 +160,7 @@ ax.plot(x, y)</span></div>
             <button class="autop on" id="autop">Auto ⟳ 2s</button>
             <span class="status">✓ <span id="ms">11</span> ms</span>
           </div>
+          <div class="appmain">
           <div class="board" id="board">
             <div class="panel" data-p="sig" style="grid-area:s1">
               <div class="phead" title="Drag to move"><span>Signal</span><span class="grip">⠿</span></div>
@@ -202,6 +196,17 @@ ax.plot(x, y)</span></div>
                 </tbody></table>
               </div>
             </div>
+          </div>
+          <aside class="controls">
+            <div class="controls-h">✨ Detected knobs</div>
+            <div class="controls-sub">JupyDash pulled these from the code — drag one to re-run.</div>
+            <div class="knob"><label>freq</label><span class="val" id="kv-freq">1.0</span>
+              <input id="k-freq" type="range" min="0.2" max="3" step="0.1" value="1"></div>
+            <div class="knob"><label>amp</label><span class="val" id="kv-amp">1.0</span>
+              <input id="k-amp" type="range" min="0.2" max="2" step="0.1" value="1"></div>
+            <div class="knob"><label>threshold</label><span class="val" id="kv-thr">0.60</span>
+              <input id="k-thr" type="range" min="-1.5" max="1.5" step="0.05" value="0.6"></div>
+          </aside>
           </div>
         </div>
       </div>
