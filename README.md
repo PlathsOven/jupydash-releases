@@ -3,7 +3,7 @@
 Public download host for **[JupyDash](https://github.com/PlathsOven/jupydash)** (source is private).
 
 ### Download
-- **macOS (universal, signed & notarized):**
+- **macOS (universal):**
   https://github.com/PlathsOven/jupydash-releases/releases/latest/download/JupyDash-macOS.dmg
 
 Landing page: https://plathsoven.github.io/jupydash-releases/

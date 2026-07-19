@@ -6,13 +6,13 @@
 <title>JupyDash — notebook dashboards</title>
 <style>
   :root { color-scheme: light dark; --fg:#1a1a2e; --bg:#f4f5f7; --card:#fff; --accent:#5b21b6; --muted:#666; --border:#e5e5ec;
-          --accent-soft:rgba(91,33,182,.10); --code-bg:rgba(0,0,0,.04); --plot:#fff; --blue:#3b6fb0; }
+          --accent-soft:rgba(91,33,182,.10); --code-bg:rgba(0,0,0,.04); --blue:#3b6fb0; --err:#dc2626; --ok:#16a34a; }
   @media (prefers-color-scheme: dark){ :root{ --fg:#e8e8f0; --bg:#14141c; --card:#1c1c26; --accent:#a78bfa; --muted:#9a9ab0; --border:#2a2a38;
-          --accent-soft:rgba(167,139,250,.16); --code-bg:rgba(255,255,255,.05); --plot:#0f0f16; --blue:#6ea8e0; } }
+          --accent-soft:rgba(167,139,250,.16); --code-bg:rgba(255,255,255,.05); --blue:#6ea8e0; --err:#f87171; --ok:#4ade80; } }
   * { box-sizing:border-box; }
   body { margin:0; font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
          color:var(--fg); background:var(--bg); display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:2.5rem 1.25rem 4rem; }
-  main { max-width:960px; width:100%; text-align:center; }
+  main { max-width:1000px; width:100%; text-align:center; }
   h1 { font-size:2.75rem; margin:0 0 .5rem; letter-spacing:-.02em; }
   p.tag { font-size:1.25rem; color:var(--muted); margin:0 0 2rem; }
   a.dl { display:inline-block; background:var(--accent); color:#fff; text-decoration:none;
@@ -25,59 +25,89 @@
   ul.how li { margin:.35rem 0; }
   code { background:var(--border); padding:.1rem .35rem; border-radius:5px; font-size:.85em; }
 
-  /* ---- demo ---- */
-  .demo { margin-top:3rem; }
-  .demo-h2 { font-size:1.05rem; font-weight:650; margin:0 0 1rem; letter-spacing:-.01em; }
-  .demo-h2 span { color:var(--muted); font-weight:400; }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.35rem; margin:0 auto 1.25rem; }
+  /* ===== live demo — a working miniature of the app, not a screenshot ===== */
+  .demo { margin-top:3rem; text-align:left; font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.1rem 1.2rem 1.2rem; }
+  .demo-head { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; margin-bottom:.9rem; }
+  .badge { color:var(--accent); background:var(--accent-soft); font-weight:600; font-size:.8rem; padding:3px 11px; border-radius:999px; white-space:nowrap; }
+  .demo-head p { margin:0; color:var(--muted); font-size:.83rem; line-height:1.5; flex:1; min-width:240px; }
+  .demo-head p b { color:var(--fg); }
 
-  /* before -> after */
-  .showcase { display:flex; align-items:center; justify-content:center; gap:1.25rem; flex-wrap:wrap; }
-  figure { margin:0; display:flex; flex-direction:column; align-items:center; gap:.55rem; }
-  figcaption { font-size:.78rem; color:var(--muted); }
-  .nb { width:230px; background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; position:relative; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+  .flow { display:flex; align-items:stretch; gap:6px; }
+  .src { width:240px; flex-shrink:0; display:flex; flex-direction:column; gap:12px; }
+  .arr { align-self:center; color:var(--accent); flex-shrink:0; }
+  .arr svg { width:34px; height:16px; display:block; }
+
+  /* mini notebook window */
+  .nb { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,.05); }
   .nb-bar { display:flex; align-items:center; gap:5px; padding:6px 9px; background:var(--code-bg); border-bottom:1px solid var(--border); }
   .nb-bar i { width:8px; height:8px; border-radius:50%; display:block; }
   .nb-bar .r{background:#ff5f57;} .nb-bar .y{background:#febc2e;} .nb-bar .g{background:#28c840;}
-  .nb-bar b { margin-left:4px; font-size:.62rem; color:var(--muted); font-weight:600; }
-  .nb-body { padding:9px 11px 18px; display:flex; flex-direction:column; gap:6px; text-align:left; }
-  .cell { display:flex; gap:6px; align-items:baseline; font:11px/1.4 "SF Mono",Menlo,Consolas,monospace; min-width:0; }
-  .cell em { color:var(--accent); font-style:normal; font-size:9.5px; flex-shrink:0; }
-  .cell span { color:var(--fg); opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .fade { position:absolute; left:0; right:0; bottom:0; height:42px; background:linear-gradient(transparent,var(--card)); }
-  .spark { display:block; width:100%; height:44px; }
-  .arrow { display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .arrow b { font-size:.8rem; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:3px 11px; border-radius:999px; }
-  .arrow svg { width:54px; height:22px; }
-  .dash { width:300px; display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px; background:var(--bg); border:1px solid var(--border); border-radius:10px; }
-  .tile { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
-  .tile b.h { font-size:.62rem; font-weight:600; color:var(--muted); padding:4px 8px; border-bottom:1px solid var(--border); text-align:left; }
-  .tile .spark { height:40px; }
-  .tile.num b.v { flex:1; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:650; padding:6px; }
+  .nb-bar b { margin-left:4px; font-size:.65rem; color:var(--muted); font-weight:600; }
+  .nb-body { padding:8px 8px 10px; display:flex; flex-direction:column; gap:4px; }
+  .cell { display:flex; gap:7px; align-items:flex-start; min-width:0;
+          font:10px/1.6 "SF Mono",Menlo,Consolas,monospace;
+          padding:3px 6px; border-radius:6px; border:1px solid transparent; transition:background .12s, border-color .12s; }
+  .cell em { color:var(--accent); font-style:normal; font-size:9px; padding-top:2px; flex-shrink:0; }
+  .cell .code { color:var(--fg); opacity:.85; white-space:pre; overflow:hidden; }
+  .cell .code b { color:var(--accent); font-weight:650; font-variant-numeric:tabular-nums; }
+  .cell .star { margin-left:auto; font-size:9px; font-style:normal; }
+  .cell.params { background:var(--accent-soft); }
+  .cell.hot { background:var(--accent-soft); border-color:var(--accent); }
 
-  /* interactive knobs */
-  .demo-head { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; margin-bottom:1rem; text-align:left; }
-  .badge { color:var(--accent); background:var(--accent-soft); font-weight:600; font-size:.8rem; padding:3px 11px; border-radius:999px; white-space:nowrap; }
-  .demo-head p { margin:0; color:var(--muted); font-size:.85rem; flex:1; min-width:230px; }
-  .knobs-body { display:flex; gap:1.4rem; align-items:stretch; flex-wrap:wrap; }
-  .knob-col { flex:1 1 250px; min-width:250px; text-align:left; }
-  .codeblk { background:var(--code-bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px;
-             font:11.5px/1.5 "SF Mono",Menlo,Consolas,monospace; white-space:pre-wrap; margin-bottom:1rem; color:var(--fg); }
-  .codeblk b { color:var(--accent); } .codeblk i { color:var(--muted); font-style:normal; }
-  .knob { margin-bottom:.7rem; }
-  .knob > label { display:block; font-size:.8rem; font-weight:600; margin-bottom:4px; }
-  .range { display:flex; align-items:center; gap:9px; }
-  .range input[type=range]{ flex:1; accent-color:var(--accent); }
-  .range .val { width:34px; text-align:right; font:12px "SF Mono",Menlo,monospace; color:var(--muted); font-variant-numeric:tabular-nums; }
-  .bool { display:inline-flex; align-items:center; gap:7px; font-size:.8rem; color:var(--muted); }
-  .bool input { accent-color:var(--accent); }
-  .plot { flex:1 1 320px; min-width:290px; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-  .plot-title { text-align:center; font-size:.78rem; font-weight:600; padding:6px; background:var(--code-bg); border-bottom:1px solid var(--border); }
-  .plot svg { display:block; width:100%; height:auto; background:var(--plot); }
-  .plot .gl { stroke:var(--border); stroke-width:1; }
-  .plot-foot { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px; border-top:1px solid var(--border);
-               font:11px "SF Mono",Menlo,monospace; color:var(--muted); }
-  .count { font-weight:700; color:var(--accent); background:var(--accent-soft); padding:1px 9px; border-radius:999px; font-variant-numeric:tabular-nums; }
+  /* detected knobs */
+  .knobs { border:1px solid var(--border); border-radius:10px; background:var(--card); padding:10px 12px 4px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .knobs-h { font-size:.72rem; font-weight:600; color:var(--accent); margin-bottom:10px; }
+  .knob { margin-bottom:10px; }
+  .knob > label { display:block; font:600 11px "SF Mono",Menlo,monospace; margin-bottom:3px; color:var(--fg); }
+  .range { display:flex; align-items:center; gap:8px; }
+  .range input[type=range]{ flex:1; accent-color:var(--fg); }
+  .range .val { width:38px; text-align:right; font:11.5px "SF Mono",Menlo,monospace; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+  /* mini JupyDash app window */
+  .appwin { flex:1; min-width:360px; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:10px; overflow:hidden;
+            background:var(--bg); box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .top { display:flex; align-items:center; gap:7px; padding:6px 10px; background:var(--card); border-bottom:1px solid var(--border); }
+  .brand { font-weight:650; font-size:11.5px; letter-spacing:-.2px; margin-right:2px; }
+  .runall { font:500 10.5px inherit; font-family:inherit; cursor:pointer; height:22px; padding:0 9px; border-radius:6px;
+            background:var(--fg); color:var(--bg); border:1px solid var(--fg); }
+  .autop { display:inline-flex; align-items:center; gap:5px; cursor:pointer; font:500 10.5px inherit; font-family:inherit; color:var(--muted);
+           height:22px; padding:0 9px; border:1px solid var(--border); border-radius:999px; background:var(--card); }
+  .autop::before { content:""; width:5px; height:5px; border-radius:50%; background:var(--muted); }
+  .autop.on { color:var(--fg); }
+  .autop.on::before { background:var(--ok); }
+  .status { margin-left:auto; font-size:10.5px; color:var(--ok); font-variant-numeric:tabular-nums; }
+
+  .board { flex:1; display:grid; grid-template-columns:2fr 1fr; grid-template-rows:176px 148px;
+           grid-template-areas:"s1 s2" "s3 s4"; gap:10px; padding:12px; }
+  .panel { display:flex; flex-direction:column; overflow:hidden; min-width:0;
+           background:var(--card); border:1px solid var(--border); border-radius:9px; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+  .panel.hot { border-color:var(--accent); }
+  .panel.over { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .panel.dragging { pointer-events:none; z-index:5; position:relative; box-shadow:0 12px 32px rgba(0,0,0,.22); cursor:grabbing; }
+  .phead { display:flex; align-items:center; gap:6px; height:24px; padding:0 8px; flex-shrink:0;
+           border-bottom:1px solid var(--border); font-size:10.5px; font-weight:600; cursor:grab; user-select:none; touch-action:none; }
+  .phead .grip { margin-left:auto; color:var(--muted); opacity:.6; font-size:9px; }
+  .pbody { flex:1; min-height:0; display:flex; padding:6px; }
+  .chart { flex:1; width:100%; height:100%; }
+  .lline { fill:none; stroke:var(--blue); stroke-width:1.8; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+  .hbar { fill:var(--blue); transition:y .25s ease, height .25s ease; }
+  .thr { stroke:var(--err); stroke-width:1.2; stroke-dasharray:4 3; vector-effect:non-scaling-stroke; }
+  .gl { stroke:var(--border); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .num { margin:auto; text-align:center; }
+  .num b { display:block; font-size:34px; font-weight:650; letter-spacing:-.5px; font-variant-numeric:tabular-nums; }
+  .num span { font-size:10.5px; color:var(--muted); }
+  .stats { margin:auto; border-collapse:collapse; font-size:11px; min-width:70%; }
+  .stats td { padding:3px 10px; border-bottom:1px solid var(--border); color:var(--muted); }
+  .stats td + td { text-align:right; color:var(--fg); font:10.5px "SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums; }
+  .stats tr:last-child td { border-bottom:none; }
+
+  @media (max-width:860px){
+    .flow { flex-direction:column; align-items:center; gap:10px; }
+    .src { width:100%; max-width:420px; }
+    .arr { transform:rotate(90deg); }
+    .appwin { width:100%; min-width:0; }
+  }
 </style>
 </head>
 <body>
@@ -87,72 +117,92 @@
   <a class="dl" href="https://github.com/PlathsOven/jupydash-releases/releases/latest/download/JupyDash-macOS.dmg">
     Download for macOS
   </a>
-  <p class="req">Universal (Apple Silicon + Intel) · macOS 11+ · Signed &amp; notarized.</p>
+  <p class="req">Universal (Apple Silicon + Intel) · macOS 11+</p>
 
-  <!-- ===== live demo ===== -->
+  <!-- ===== live demo: notebook + knobs -> a working mini JupyDash board ===== -->
   <section class="demo">
     <div class="card">
-      <h2 class="demo-h2">From a linear notebook to a live dashboard</h2>
-      <div class="showcase">
-        <figure>
+      <div class="demo-head">
+        <span class="badge">Live demo</span>
+        <p><b>Drag a panel. Turn a knob.</b> The notebook&rsquo;s outputs became the panels on the right, and
+           <b>✨&nbsp;Detect knobs</b> turned its hardcoded values into controls — every change re-runs the
+           notebook and refreshes every panel in place.</p>
+      </div>
+
+      <div class="flow">
+        <div class="src">
           <div class="nb">
             <div class="nb-bar"><i class="r"></i><i class="y"></i><i class="g"></i><b>signal.ipynb</b></div>
             <div class="nb-body">
-              <div class="cell"><em>In[1]</em><span>ax.plot(x, y)</span></div>
-              <svg class="spark" data-spark data-w="150" data-h="44" viewBox="0 0 150 44" preserveAspectRatio="none"></svg>
-              <div class="cell"><em>In[2]</em><span>ax.hist(y, bins=30)</span></div>
-              <svg class="spark" data-hist data-w="150" data-h="44" viewBox="0 0 150 44" preserveAspectRatio="none"></svg>
-              <div class="cell"><em>In[3]</em><span>above = (y &gt; 0.5).sum()</span></div>
+              <div class="cell params" data-c="params"><em>In [1]</em><span class="code">freq = <b id="cv-freq">1.0</b>
+amp = <b id="cv-amp">1.0</b>
+threshold = <b id="cv-thr">0.60</b></span><i class="star" title="Injected by ✨ Detect knobs">✨</i></div>
+              <div class="cell" data-c="sig"><em>In [2]</em><span class="code">y = amp*sin(freq*x) + noise
+ax.plot(x, y)</span></div>
+              <div class="cell" data-c="hist"><em>In [3]</em><span class="code">ax.hist(y, bins=14)</span></div>
+              <div class="cell" data-c="count"><em>In [4]</em><span class="code">(y &gt; threshold).sum()</span></div>
+              <div class="cell" data-c="stats"><em>In [5]</em><span class="code">pd.Series(y).describe()</span></div>
             </div>
-            <div class="fade"></div>
           </div>
-          <figcaption>Raw notebook — top&#8209;to&#8209;bottom</figcaption>
-        </figure>
 
-        <div class="arrow">
-          <b>JupyDash</b>
-          <svg viewBox="0 0 60 24" fill="none"><path d="M2 12h48" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="color:var(--accent)"/><path d="M40 4l12 8-12 8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"/></svg>
+          <div class="knobs">
+            <div class="knobs-h">✨ Detected knobs</div>
+            <div class="knob"><label>freq</label><div class="range">
+              <input id="k-freq" type="range" min="0.2" max="3" step="0.1" value="1"><span class="val" id="kv-freq">1.0</span></div></div>
+            <div class="knob"><label>amp</label><div class="range">
+              <input id="k-amp" type="range" min="0.2" max="2" step="0.1" value="1"><span class="val" id="kv-amp">1.0</span></div></div>
+            <div class="knob"><label>threshold</label><div class="range">
+              <input id="k-thr" type="range" min="-1.5" max="1.5" step="0.05" value="0.6"><span class="val" id="kv-thr">0.60</span></div></div>
+          </div>
         </div>
 
-        <figure>
-          <div class="dash">
-            <div class="tile"><b class="h">Signal</b><svg class="spark" data-spark data-w="150" data-h="40" viewBox="0 0 150 40" preserveAspectRatio="none"></svg></div>
-            <div class="tile"><b class="h">Distribution</b><svg class="spark" data-hist data-w="150" data-h="40" viewBox="0 0 150 40" preserveAspectRatio="none"></svg></div>
-            <div class="tile num"><b class="h">above</b><b class="v">128</b></div>
-            <div class="tile"><b class="h">Metrics</b><svg class="spark" data-bars data-w="150" data-h="40" viewBox="0 0 150 40" preserveAspectRatio="none"></svg></div>
-          </div>
-          <figcaption>Live dashboard — draggable, resizable panels</figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="demo-head">
-        <span class="badge">✨ Detect knobs</span>
-        <p>Hardcoded values in your notebook become live controls — drag one and the panel re-runs. Try it:</p>
-      </div>
-      <div class="knobs-body">
-        <div class="knob-col">
-          <div class="codeblk"><i># parameters → knobs</i>
-y = <b>amplitude</b> * sin(<b>frequency</b>*x) + <b>noise</b></div>
-          <div class="knob"><label>frequency</label><div class="range"><input id="k-freq" type="range" min="0.2" max="3" step="0.1" value="1"><span class="val" id="v-freq">1.0</span></div></div>
-          <div class="knob"><label>amplitude</label><div class="range"><input id="k-amp" type="range" min="0.2" max="2" step="0.1" value="1"><span class="val" id="v-amp">1.0</span></div></div>
-          <div class="knob"><label>noise_level</label><div class="range"><input id="k-noise" type="range" min="0" max="0.8" step="0.05" value="0.3"><span class="val" id="v-noise">0.30</span></div></div>
-          <div class="knob"><label>threshold</label><div class="range"><input id="k-thr" type="range" min="-1" max="1" step="0.05" value="0.5"><span class="val" id="v-thr">0.50</span></div></div>
-          <div class="knob"><label>show_grid</label><label class="bool"><input id="k-grid" type="checkbox" checked><span id="v-grid">on</span></label></div>
+        <div class="arr" aria-hidden="true">
+          <svg viewBox="0 0 60 24" fill="none"><path d="M2 12h48" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M40 4l12 8-12 8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="plot">
-          <div class="plot-title">Signal</div>
-          <svg viewBox="0 0 340 180">
-            <g id="sig-grid">
-              <line class="gl" x1="6" x2="334" y1="50" y2="50"/>
-              <line class="gl" x1="6" x2="334" y1="90" y2="90"/>
-              <line class="gl" x1="6" x2="334" y1="130" y2="130"/>
-            </g>
-            <line id="sig-thr" x1="6" x2="334" y1="45" y2="45" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5 4"/>
-            <polyline id="sig-line" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linejoin="round"/>
-          </svg>
-          <div class="plot-foot"><span>above = (y &gt; threshold).sum()</span><span class="count" id="sig-count">50</span></div>
+
+        <div class="appwin">
+          <div class="top">
+            <span class="brand">JupyDash</span>
+            <button class="runall" id="runall">▶ Run all</button>
+            <button class="autop on" id="autop">Auto ⟳ 2s</button>
+            <span class="status">✓ <span id="ms">11</span> ms</span>
+          </div>
+          <div class="board" id="board">
+            <div class="panel" data-p="sig" style="grid-area:s1">
+              <div class="phead" title="Drag to move"><span>Signal</span><span class="grip">⠿</span></div>
+              <div class="pbody">
+                <svg class="chart" viewBox="0 0 100 60" preserveAspectRatio="none">
+                  <line class="gl" x1="0" x2="100" y1="15" y2="15"/><line class="gl" x1="0" x2="100" y1="30" y2="30"/><line class="gl" x1="0" x2="100" y1="45" y2="45"/>
+                  <line class="thr" id="sig-thr" x1="0" x2="100" y1="0" y2="0"/>
+                  <polyline class="lline" id="sig-line"/>
+                </svg>
+              </div>
+            </div>
+            <div class="panel" data-p="count" style="grid-area:s2">
+              <div class="phead" title="Drag to move"><span>Above threshold</span><span class="grip">⠿</span></div>
+              <div class="pbody"><div class="num"><b id="cnt">0</b><span>of 120 samples</span></div></div>
+            </div>
+            <div class="panel" data-p="hist" style="grid-area:s3">
+              <div class="phead" title="Drag to move"><span>Distribution</span><span class="grip">⠿</span></div>
+              <div class="pbody">
+                <svg class="chart" viewBox="0 0 100 60" preserveAspectRatio="none">
+                  <line class="gl" x1="0" x2="100" y1="56" y2="56"/>
+                  <g id="hist-bars"></g>
+                  <line class="thr" id="hist-thr" x1="0" x2="0" y1="4" y2="56"/>
+                </svg>
+              </div>
+            </div>
+            <div class="panel" data-p="stats" style="grid-area:s4">
+              <div class="phead" title="Drag to move"><span>Stats</span><span class="grip">⠿</span></div>
+              <div class="pbody">
+                <table class="stats"><tbody>
+                  <tr><td>mean</td><td id="st-mean">0.00</td></tr>
+                  <tr><td>std</td><td id="st-std">0.00</td></tr>
+                  <tr><td>max</td><td id="st-max">0.00</td></tr>
+                </tbody></table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -169,48 +219,149 @@ y = <b>amplitude</b> * sin(<b>frequency</b>*x) + <b>noise</b></div>
 </main>
 
 <script>
-  var N = 130;
-  var XS = Array.from({length:N}, function(_,i){ return 10*i/(N-1); });
-  var NOISE = XS.map(function(_,i){ var s = Math.sin(i*127.1+31.7)*43758.5453; return (s-Math.floor(s))*2-1; });
-  var HIST = [0.2,0.5,0.85,1,0.72,0.42,0.18], BARS = [0.62,0.27,0.69];
+  // ---- the same demo the app ships on its first-run screen, in plain JS ----
+  const $ = (id) => document.getElementById(id);
+  const N = 120;
+  // x spans two full periods at freq = 1, so the sample's distribution stays
+  // symmetric as the phase advances (a partial period skews the histogram).
+  const XS = Array.from({ length: N }, (_, i) => 4 * Math.PI * i / (N - 1));
+  const NOISE_AMP = 0.22, Y_DOM = 2.25, HLO = -2.4, HHI = 2.4, BINS = 14;
+  // Deterministic pseudo-noise: stable per (i, seed) so knob drags don't
+  // flicker, while each auto-run tick (seed + 1) brings a fresh sample.
+  const noiseAt = (i, seed) => {
+    const s = Math.sin(i * 127.1 + seed * 311.7 + 74.7) * 43758.5453;
+    return (s - Math.floor(s)) * 2 - 1;
+  };
 
-  function linePts(w,h){
-    return XS.map(function(x,i){
-      var y = Math.sin(x) + 0.12*Math.sin(i*20);
-      return (x/10*w).toFixed(1)+","+(h/2 - (y/1.4)*(h/2-3)).toFixed(1);
-    }).join(" ");
-  }
-  function barsSVG(vals,w,h){
-    var bw = w/vals.length;
-    return vals.map(function(v,i){
-      return '<rect x="'+(i*bw+bw*0.12).toFixed(1)+'" y="'+(h-v*(h-4)).toFixed(1)+
-             '" width="'+(bw*0.76).toFixed(1)+'" height="'+(v*(h-4)).toFixed(1)+'" rx="1" fill="var(--blue)"/>';
-    }).join("");
-  }
-  // decorative mini charts
-  document.querySelectorAll("[data-spark]").forEach(function(s){
-    s.innerHTML = '<polyline points="'+linePts(+s.dataset.w,+s.dataset.h)+'" fill="none" stroke="var(--blue)" stroke-width="1.6"/>';
-  });
-  document.querySelectorAll("[data-hist]").forEach(function(s){ s.innerHTML = barsSVG(HIST,+s.dataset.w,+s.dataset.h); });
-  document.querySelectorAll("[data-bars]").forEach(function(s){ s.innerHTML = barsSVG(BARS,+s.dataset.w,+s.dataset.h); });
+  let freq = 1.0, amp = 1.0, thr = 0.6, phase = 0, seed = 0;
 
-  // interactive parameterization demo
-  var W=340,H=180,PL=6,PR=6,PT=10,PB=10,DOM=2.8;
-  function px(i){ return PL+(i/(N-1))*(W-PL-PR); }
-  function py(y){ var mid=(PT+(H-PB))/2, half=(H-PB-PT)/2; return mid-(Math.max(-DOM,Math.min(DOM,y))/DOM)*half; }
-  function $(id){ return document.getElementById(id); }
-  function render(){
-    var f=+$("k-freq").value, a=+$("k-amp").value, n=+$("k-noise").value, t=+$("k-thr").value, g=$("k-grid").checked;
-    $("v-freq").textContent=f.toFixed(1); $("v-amp").textContent=a.toFixed(1);
-    $("v-noise").textContent=n.toFixed(2); $("v-thr").textContent=t.toFixed(2); $("v-grid").textContent=g?"on":"off";
-    var ys = XS.map(function(x,i){ return a*Math.sin(f*x)+n*NOISE[i]; });
-    $("sig-line").setAttribute("points", ys.map(function(y,i){ return px(i).toFixed(1)+","+py(y).toFixed(1); }).join(" "));
-    var ty = py(t).toFixed(1); $("sig-thr").setAttribute("y1",ty); $("sig-thr").setAttribute("y2",ty);
-    $("sig-grid").style.display = g ? "" : "none";
-    $("sig-count").textContent = ys.reduce(function(c,y){ return c+(y>t?1:0); },0);
+  const barsG = $("hist-bars");
+  const bw = 100 / BINS;
+  for (let i = 0; i < BINS; i++) {
+    const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    r.setAttribute("class", "hbar");
+    r.setAttribute("x", (i * bw + bw * 0.15).toFixed(2));
+    r.setAttribute("width", (bw * 0.7).toFixed(2));
+    r.setAttribute("rx", "0.7");
+    barsG.appendChild(r);
   }
-  ["k-freq","k-amp","k-noise","k-thr","k-grid"].forEach(function(id){ $(id).addEventListener("input",render); });
+
+  const py = (y) => 30 - (Math.max(-Y_DOM, Math.min(Y_DOM, y)) / Y_DOM) * 28;
+
+  function render() {
+    $("cv-freq").textContent = $("kv-freq").textContent = freq.toFixed(1);
+    $("cv-amp").textContent = $("kv-amp").textContent = amp.toFixed(1);
+    $("cv-thr").textContent = $("kv-thr").textContent = thr.toFixed(2);
+
+    const ys = XS.map((x, i) => amp * Math.sin(freq * x + phase) + NOISE_AMP * noiseAt(i, seed));
+    $("sig-line").setAttribute("points", ys.map((y, i) => ((i / (N - 1)) * 100).toFixed(2) + "," + py(y).toFixed(2)).join(" "));
+    const ty = py(thr).toFixed(2);
+    $("sig-thr").setAttribute("y1", ty); $("sig-thr").setAttribute("y2", ty);
+
+    const bins = new Array(BINS).fill(0);
+    for (const y of ys) bins[Math.max(0, Math.min(BINS - 1, Math.floor((y - HLO) / (HHI - HLO) * BINS)))]++;
+    const maxBin = Math.max(...bins, 1);
+    barsG.childNodes.forEach((r, i) => {
+      const h = bins[i] / maxBin * 50;
+      r.setAttribute("y", (56 - h).toFixed(2));
+      r.setAttribute("height", h.toFixed(2));
+    });
+    const tx = ((Math.max(HLO, Math.min(HHI, thr)) - HLO) / (HHI - HLO) * 100).toFixed(2);
+    $("hist-thr").setAttribute("x1", tx); $("hist-thr").setAttribute("x2", tx);
+
+    $("cnt").textContent = ys.reduce((n, y) => n + (y > thr ? 1 : 0), 0);
+    const mean = ys.reduce((a, y) => a + y, 0) / N;
+    $("st-mean").textContent = mean.toFixed(2);
+    $("st-std").textContent = Math.sqrt(ys.reduce((a, y) => a + (y - mean) ** 2, 0) / N).toFixed(2);
+    $("st-max").textContent = Math.max(...ys).toFixed(2);
+  }
+
+  // One "notebook run": new sample, the wave scrolls on, the toolbar reports
+  // a plausible duration — like the app's Auto-run does for real.
+  function runOnce() {
+    phase += 0.4; seed += 1;
+    $("ms").textContent = 8 + ((seed * 5 + 3) % 8);
+    render();
+  }
+  $("runall").addEventListener("click", runOnce);
+
+  let auto = !matchMedia("(prefers-reduced-motion: reduce)").matches, timer = null;
+  function applyAuto() {
+    $("autop").classList.toggle("on", auto);
+    if (timer) { clearInterval(timer); timer = null; }
+    if (auto) timer = setInterval(() => { if (!document.hidden) runOnce(); }, 2000);
+  }
+  $("autop").addEventListener("click", () => { auto = !auto; applyAuto(); });
+  applyAuto();
+
+  for (const [id, set] of [["k-freq", (v) => freq = v], ["k-amp", (v) => amp = v], ["k-thr", (v) => thr = v]]) {
+    $(id).addEventListener("input", (e) => { set(+e.target.value); render(); });
+  }
   render();
+
+  // ---- hover: link each panel to its source cell (and back) ----
+  const hotOf = (kind, key) => document.querySelector(`[data-${kind}="${key}"]`);
+  for (const el of document.querySelectorAll("[data-p],[data-c]")) {
+    const key = el.dataset.p || el.dataset.c;
+    const other = () => el.dataset.p ? hotOf("c", key) : hotOf("p", key);
+    el.addEventListener("mouseenter", () => { if (!drag) { el.classList.add("hot"); other()?.classList.add("hot"); } });
+    el.addEventListener("mouseleave", () => { el.classList.remove("hot"); other()?.classList.remove("hot"); });
+  }
+
+  // ---- drag a panel by its header to swap slots (FLIP-animated) ----
+  const board = $("board");
+  let drag = null;
+  const targetUnder = (e) => {
+    const p = document.elementFromPoint(e.clientX, e.clientY)?.closest(".panel");
+    return p && p !== drag.el ? p : null;
+  };
+  board.addEventListener("pointerdown", (e) => {
+    const head = e.target.closest(".phead");
+    if (!head || drag) return;
+    e.preventDefault();
+    drag = { el: head.closest(".panel"), x0: e.clientX, y0: e.clientY };
+    drag.el.classList.add("dragging");
+    head.setPointerCapture(e.pointerId);
+  });
+  board.addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    drag.el.style.transform = `translate(${e.clientX - drag.x0}px, ${e.clientY - drag.y0}px)`;
+    const over = targetUnder(e);
+    for (const p of board.querySelectorAll(".panel.over")) p.classList.remove("over");
+    over?.classList.add("over");
+  });
+  const flip = (el, r1) => {
+    const r2 = el.getBoundingClientRect();
+    el.style.transformOrigin = "top left";
+    el.style.transition = "none";
+    el.style.transform = `translate(${r1.left - r2.left}px, ${r1.top - r2.top}px) scale(${r1.width / r2.width}, ${r1.height / r2.height})`;
+    requestAnimationFrame(() => {
+      el.style.transition = "transform .28s cubic-bezier(.2,.8,.2,1)";
+      el.style.transform = "";
+      setTimeout(() => { el.style.transition = ""; }, 300);
+    });
+  };
+  const endDrag = (e) => {
+    if (!drag) return;
+    const a = drag.el, t = targetUnder(e);
+    a.classList.remove("dragging");
+    for (const p of board.querySelectorAll(".panel.over")) p.classList.remove("over");
+    if (t) {
+      const r1a = a.getBoundingClientRect(), r1t = t.getBoundingClientRect();
+      const area = a.style.gridArea;
+      a.style.gridArea = t.style.gridArea;
+      t.style.gridArea = area;
+      a.style.transform = "";
+      flip(a, r1a); flip(t, r1t);
+    } else {
+      const r1 = a.getBoundingClientRect();
+      a.style.transform = "";
+      flip(a, r1);
+    }
+    drag = null;
+  };
+  board.addEventListener("pointerup", endDrag);
+  board.addEventListener("pointercancel", endDrag);
 </script>
 </body>
 </html>
