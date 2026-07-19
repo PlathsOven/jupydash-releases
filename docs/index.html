@@ -5,14 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>JupyDash — notebook dashboards</title>
 <style>
-  :root { color-scheme: light dark; --fg:#1a1a2e; --bg:#f4f5f7; --card:#fff; --accent:#5b21b6; --muted:#666; --border:#e5e5ec; }
-  @media (prefers-color-scheme: dark){ :root{ --fg:#e8e8f0; --bg:#14141c; --card:#1c1c26; --accent:#a78bfa; --muted:#9a9ab0; --border:#2a2a38; } }
+  :root { color-scheme: light dark; --fg:#1a1a2e; --bg:#f4f5f7; --card:#fff; --accent:#5b21b6; --muted:#666; --border:#e5e5ec;
+          --accent-soft:rgba(91,33,182,.10); --code-bg:rgba(0,0,0,.04); --plot:#fff; --blue:#3b6fb0; }
+  @media (prefers-color-scheme: dark){ :root{ --fg:#e8e8f0; --bg:#14141c; --card:#1c1c26; --accent:#a78bfa; --muted:#9a9ab0; --border:#2a2a38;
+          --accent-soft:rgba(167,139,250,.16); --code-bg:rgba(255,255,255,.05); --plot:#0f0f16; --blue:#6ea8e0; } }
   * { box-sizing:border-box; }
   body { margin:0; font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-         color:var(--fg); background:var(--bg); display:grid; place-items:center; min-height:100vh; padding:2rem; }
-  main { max-width:640px; text-align:center; }
+         color:var(--fg); background:var(--bg); display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:2.5rem 1.25rem 4rem; }
+  main { max-width:960px; width:100%; text-align:center; }
   h1 { font-size:2.75rem; margin:0 0 .5rem; letter-spacing:-.02em; }
-  p.tag { font-size:1.25rem; color:var(--muted); margin:0 0 2.5rem; }
+  p.tag { font-size:1.25rem; color:var(--muted); margin:0 0 2rem; }
   a.dl { display:inline-block; background:var(--accent); color:#fff; text-decoration:none;
          padding:.9rem 2rem; border-radius:12px; font-weight:600; font-size:1.1rem;
          box-shadow:0 6px 20px rgba(91,33,182,.3); transition:transform .1s; }
@@ -22,6 +24,60 @@
            background:var(--card); border:1px solid var(--border); border-radius:12px; }
   ul.how li { margin:.35rem 0; }
   code { background:var(--border); padding:.1rem .35rem; border-radius:5px; font-size:.85em; }
+
+  /* ---- demo ---- */
+  .demo { margin-top:3rem; }
+  .demo-h2 { font-size:1.05rem; font-weight:650; margin:0 0 1rem; letter-spacing:-.01em; }
+  .demo-h2 span { color:var(--muted); font-weight:400; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:1.25rem 1.35rem; margin:0 auto 1.25rem; }
+
+  /* before -> after */
+  .showcase { display:flex; align-items:center; justify-content:center; gap:1.25rem; flex-wrap:wrap; }
+  figure { margin:0; display:flex; flex-direction:column; align-items:center; gap:.55rem; }
+  figcaption { font-size:.78rem; color:var(--muted); }
+  .nb { width:230px; background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; position:relative; box-shadow:0 4px 14px rgba(0,0,0,.06); }
+  .nb-bar { display:flex; align-items:center; gap:5px; padding:6px 9px; background:var(--code-bg); border-bottom:1px solid var(--border); }
+  .nb-bar i { width:8px; height:8px; border-radius:50%; display:block; }
+  .nb-bar .r{background:#ff5f57;} .nb-bar .y{background:#febc2e;} .nb-bar .g{background:#28c840;}
+  .nb-bar b { margin-left:4px; font-size:.62rem; color:var(--muted); font-weight:600; }
+  .nb-body { padding:9px 11px 18px; display:flex; flex-direction:column; gap:6px; text-align:left; }
+  .cell { display:flex; gap:6px; align-items:baseline; font:11px/1.4 "SF Mono",Menlo,Consolas,monospace; min-width:0; }
+  .cell em { color:var(--accent); font-style:normal; font-size:9.5px; flex-shrink:0; }
+  .cell span { color:var(--fg); opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fade { position:absolute; left:0; right:0; bottom:0; height:42px; background:linear-gradient(transparent,var(--card)); }
+  .spark { display:block; width:100%; height:44px; }
+  .arrow { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .arrow b { font-size:.8rem; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:3px 11px; border-radius:999px; }
+  .arrow svg { width:54px; height:22px; }
+  .dash { width:300px; display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px; background:var(--bg); border:1px solid var(--border); border-radius:10px; }
+  .tile { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
+  .tile b.h { font-size:.62rem; font-weight:600; color:var(--muted); padding:4px 8px; border-bottom:1px solid var(--border); text-align:left; }
+  .tile .spark { height:40px; }
+  .tile.num b.v { flex:1; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:650; padding:6px; }
+
+  /* interactive knobs */
+  .demo-head { display:flex; align-items:baseline; gap:.6rem; flex-wrap:wrap; margin-bottom:1rem; text-align:left; }
+  .badge { color:var(--accent); background:var(--accent-soft); font-weight:600; font-size:.8rem; padding:3px 11px; border-radius:999px; white-space:nowrap; }
+  .demo-head p { margin:0; color:var(--muted); font-size:.85rem; flex:1; min-width:230px; }
+  .knobs-body { display:flex; gap:1.4rem; align-items:stretch; flex-wrap:wrap; }
+  .knob-col { flex:1 1 250px; min-width:250px; text-align:left; }
+  .codeblk { background:var(--code-bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px;
+             font:11.5px/1.5 "SF Mono",Menlo,Consolas,monospace; white-space:pre-wrap; margin-bottom:1rem; color:var(--fg); }
+  .codeblk b { color:var(--accent); } .codeblk i { color:var(--muted); font-style:normal; }
+  .knob { margin-bottom:.7rem; }
+  .knob > label { display:block; font-size:.8rem; font-weight:600; margin-bottom:4px; }
+  .range { display:flex; align-items:center; gap:9px; }
+  .range input[type=range]{ flex:1; accent-color:var(--accent); }
+  .range .val { width:34px; text-align:right; font:12px "SF Mono",Menlo,monospace; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .bool { display:inline-flex; align-items:center; gap:7px; font-size:.8rem; color:var(--muted); }
+  .bool input { accent-color:var(--accent); }
+  .plot { flex:1 1 320px; min-width:290px; display:flex; flex-direction:column; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+  .plot-title { text-align:center; font-size:.78rem; font-weight:600; padding:6px; background:var(--code-bg); border-bottom:1px solid var(--border); }
+  .plot svg { display:block; width:100%; height:auto; background:var(--plot); }
+  .plot .gl { stroke:var(--border); stroke-width:1; }
+  .plot-foot { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px; border-top:1px solid var(--border);
+               font:11px "SF Mono",Menlo,monospace; color:var(--muted); }
+  .count { font-weight:700; color:var(--accent); background:var(--accent-soft); padding:1px 9px; border-radius:999px; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -32,6 +88,76 @@
     Download for macOS
   </a>
   <p class="req">Universal (Apple Silicon + Intel) · macOS 11+ · Signed &amp; notarized.</p>
+
+  <!-- ===== live demo ===== -->
+  <section class="demo">
+    <div class="card">
+      <h2 class="demo-h2">From a linear notebook to a live dashboard</h2>
+      <div class="showcase">
+        <figure>
+          <div class="nb">
+            <div class="nb-bar"><i class="r"></i><i class="y"></i><i class="g"></i><b>signal.ipynb</b></div>
+            <div class="nb-body">
+              <div class="cell"><em>In[1]</em><span>ax.plot(x, y)</span></div>
+              <svg class="spark" data-spark data-w="150" data-h="44" viewBox="0 0 150 44" preserveAspectRatio="none"></svg>
+              <div class="cell"><em>In[2]</em><span>ax.hist(y, bins=30)</span></div>
+              <svg class="spark" data-hist data-w="150" data-h="44" viewBox="0 0 150 44" preserveAspectRatio="none"></svg>
+              <div class="cell"><em>In[3]</em><span>above = (y &gt; 0.5).sum()</span></div>
+            </div>
+            <div class="fade"></div>
+          </div>
+          <figcaption>Raw notebook — top&#8209;to&#8209;bottom</figcaption>
+        </figure>
+
+        <div class="arrow">
+          <b>JupyDash</b>
+          <svg viewBox="0 0 60 24" fill="none"><path d="M2 12h48" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="color:var(--accent)"/><path d="M40 4l12 8-12 8" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"/></svg>
+        </div>
+
+        <figure>
+          <div class="dash">
+            <div class="tile"><b class="h">Signal</b><svg class="spark" data-spark data-w="150" data-h="40" viewBox="0 0 150 40" preserveAspectRatio="none"></svg></div>
+            <div class="tile"><b class="h">Distribution</b><svg class="spark" data-hist data-w="150" data-h="40" viewBox="0 0 150 40" preserveAspectRatio="none"></svg></div>
+            <div class="tile num"><b class="h">above</b><b class="v">128</b></div>
+            <div class="tile"><b class="h">Metrics</b><svg class="spark" data-bars data-w="150" data-h="40" viewBox="0 0 150 40" preserveAspectRatio="none"></svg></div>
+          </div>
+          <figcaption>Live dashboard — draggable, resizable panels</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="demo-head">
+        <span class="badge">✨ Detect knobs</span>
+        <p>Hardcoded values in your notebook become live controls — drag one and the panel re-runs. Try it:</p>
+      </div>
+      <div class="knobs-body">
+        <div class="knob-col">
+          <div class="codeblk"><i># parameters → knobs</i>
+y = <b>amplitude</b> * sin(<b>frequency</b>*x) + <b>noise</b></div>
+          <div class="knob"><label>frequency</label><div class="range"><input id="k-freq" type="range" min="0.2" max="3" step="0.1" value="1"><span class="val" id="v-freq">1.0</span></div></div>
+          <div class="knob"><label>amplitude</label><div class="range"><input id="k-amp" type="range" min="0.2" max="2" step="0.1" value="1"><span class="val" id="v-amp">1.0</span></div></div>
+          <div class="knob"><label>noise_level</label><div class="range"><input id="k-noise" type="range" min="0" max="0.8" step="0.05" value="0.3"><span class="val" id="v-noise">0.30</span></div></div>
+          <div class="knob"><label>threshold</label><div class="range"><input id="k-thr" type="range" min="-1" max="1" step="0.05" value="0.5"><span class="val" id="v-thr">0.50</span></div></div>
+          <div class="knob"><label>show_grid</label><label class="bool"><input id="k-grid" type="checkbox" checked><span id="v-grid">on</span></label></div>
+        </div>
+        <div class="plot">
+          <div class="plot-title">Signal</div>
+          <svg viewBox="0 0 340 180">
+            <g id="sig-grid">
+              <line class="gl" x1="6" x2="334" y1="50" y2="50"/>
+              <line class="gl" x1="6" x2="334" y1="90" y2="90"/>
+              <line class="gl" x1="6" x2="334" y1="130" y2="130"/>
+            </g>
+            <line id="sig-thr" x1="6" x2="334" y1="45" y2="45" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="5 4"/>
+            <polyline id="sig-line" fill="none" stroke="var(--blue)" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          <div class="plot-foot"><span>above = (y &gt; threshold).sum()</span><span class="count" id="sig-count">50</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <ul class="how">
     <li><strong>1.</strong> Open the downloaded <code>.dmg</code> and drag JupyDash to Applications.</li>
     <li><strong>2.</strong> Launch it, then drag a <code>.ipynb</code> onto the window.</li>
@@ -41,5 +167,50 @@
       <code>ipykernel</code> installed (any Anaconda / Jupyter user already has it).</li>
   </ul>
 </main>
+
+<script>
+  var N = 130;
+  var XS = Array.from({length:N}, function(_,i){ return 10*i/(N-1); });
+  var NOISE = XS.map(function(_,i){ var s = Math.sin(i*127.1+31.7)*43758.5453; return (s-Math.floor(s))*2-1; });
+  var HIST = [0.2,0.5,0.85,1,0.72,0.42,0.18], BARS = [0.62,0.27,0.69];
+
+  function linePts(w,h){
+    return XS.map(function(x,i){
+      var y = Math.sin(x) + 0.12*Math.sin(i*20);
+      return (x/10*w).toFixed(1)+","+(h/2 - (y/1.4)*(h/2-3)).toFixed(1);
+    }).join(" ");
+  }
+  function barsSVG(vals,w,h){
+    var bw = w/vals.length;
+    return vals.map(function(v,i){
+      return '<rect x="'+(i*bw+bw*0.12).toFixed(1)+'" y="'+(h-v*(h-4)).toFixed(1)+
+             '" width="'+(bw*0.76).toFixed(1)+'" height="'+(v*(h-4)).toFixed(1)+'" rx="1" fill="var(--blue)"/>';
+    }).join("");
+  }
+  // decorative mini charts
+  document.querySelectorAll("[data-spark]").forEach(function(s){
+    s.innerHTML = '<polyline points="'+linePts(+s.dataset.w,+s.dataset.h)+'" fill="none" stroke="var(--blue)" stroke-width="1.6"/>';
+  });
+  document.querySelectorAll("[data-hist]").forEach(function(s){ s.innerHTML = barsSVG(HIST,+s.dataset.w,+s.dataset.h); });
+  document.querySelectorAll("[data-bars]").forEach(function(s){ s.innerHTML = barsSVG(BARS,+s.dataset.w,+s.dataset.h); });
+
+  // interactive parameterization demo
+  var W=340,H=180,PL=6,PR=6,PT=10,PB=10,DOM=2.8;
+  function px(i){ return PL+(i/(N-1))*(W-PL-PR); }
+  function py(y){ var mid=(PT+(H-PB))/2, half=(H-PB-PT)/2; return mid-(Math.max(-DOM,Math.min(DOM,y))/DOM)*half; }
+  function $(id){ return document.getElementById(id); }
+  function render(){
+    var f=+$("k-freq").value, a=+$("k-amp").value, n=+$("k-noise").value, t=+$("k-thr").value, g=$("k-grid").checked;
+    $("v-freq").textContent=f.toFixed(1); $("v-amp").textContent=a.toFixed(1);
+    $("v-noise").textContent=n.toFixed(2); $("v-thr").textContent=t.toFixed(2); $("v-grid").textContent=g?"on":"off";
+    var ys = XS.map(function(x,i){ return a*Math.sin(f*x)+n*NOISE[i]; });
+    $("sig-line").setAttribute("points", ys.map(function(y,i){ return px(i).toFixed(1)+","+py(y).toFixed(1); }).join(" "));
+    var ty = py(t).toFixed(1); $("sig-thr").setAttribute("y1",ty); $("sig-thr").setAttribute("y2",ty);
+    $("sig-grid").style.display = g ? "" : "none";
+    $("sig-count").textContent = ys.reduce(function(c,y){ return c+(y>t?1:0); },0);
+  }
+  ["k-freq","k-amp","k-noise","k-thr","k-grid"].forEach(function(id){ $(id).addEventListener("input",render); });
+  render();
+</script>
 </body>
 </html>
