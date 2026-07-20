@@ -1,0 +1,66 @@
+# Builds the JupyDash Windows installer from the public source repo and
+# attaches it to a release in THIS repo, so the landing page's
+# /releases/latest/download/JupyDash-Windows-Setup.exe link stays stable.
+#
+# The Python sidecar is frozen with PyInstaller, which cannot cross-compile —
+# hence the native windows-latest runner (the macOS DMG is built on a Mac).
+name: Build Windows installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "PlathsOven/jupydash ref to build"
+        default: "main"
+      release_tag:
+        description: "Release tag in this repo to attach the installer to"
+        default: "v0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out JupyDash source
+        uses: actions/checkout@v4
+        with:
+          repository: PlathsOven/jupydash
+          ref: ${{ inputs.source_ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build:frontend
+
+      - name: Freeze Python sidecar (PyInstaller)
+        run: node scripts/freeze-sidecar.mjs --arch x64
+
+      - name: Build NSIS installer (unsigned)
+        run: npx electron-builder --win --config electron-builder.config.cjs
+
+      - name: Rename installer to stable asset name
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem dist -File -Filter "*Setup*.exe" | Select-Object -First 1
+          if (-not $exe) { throw "No NSIS installer found in dist/" }
+          Copy-Item $exe.FullName "dist/JupyDash-Windows-Setup.exe"
+          Get-Item "dist/JupyDash-Windows-Setup.exe" | Format-List Name, Length
+
+      - name: Attach installer to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release upload "${{ inputs.release_tag }}"
+          "dist/JupyDash-Windows-Setup.exe"
+          --clobber -R "${{ github.repository }}"
