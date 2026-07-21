@@ -57,7 +57,9 @@ jobs:
         run: node scripts/freeze-sidecar.mjs --arch x64
 
       - name: Build NSIS installer (unsigned)
-        run: npx electron-builder --win --config electron-builder.config.cjs
+        # --publish never: on CI electron-builder otherwise tries to publish to
+        # a GitHub release itself; the upload step below owns that.
+        run: npx electron-builder --win --config electron-builder.config.cjs --publish never
 
       - name: Rename installer to stable asset name
         shell: pwsh
