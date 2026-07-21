@@ -38,6 +38,16 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
+        # --ignore-scripts: the root postinstall (`npm --prefix frontend install`)
+        # recurses infinitely under Windows npm, so frontend deps are installed
+        # explicitly below. Skipping the electron package's install script is
+        # fine here — electron-builder downloads its own Electron dist.
+        run: npm ci --ignore-scripts
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
         run: npm ci
 
       - name: Build frontend
